@@ -1,4 +1,4 @@
-from MAA_base import GCABase
+from MAA_base import MAABase
 import torch
 import numpy as np
 from functools import wraps
@@ -58,7 +58,7 @@ def generate_labels(y):
     return np.array(labels)
 
 
-class base_time_series(GCABase):
+class base_time_series(MAABase):
     def __init__(self, args, N_pairs: int, batch_size: int, num_epochs: int,
                  generators_names: List, discriminators_names: Optional[List],
                  ckpt_dir: str, output_dir: str,
@@ -299,6 +299,7 @@ class base_time_series(GCABase):
     def train(self, logger):
         return train_baseframe(self.generators[0], self.dataloaders[0],
                                                     self.y_scaler, self.train_x_all[0], self.train_y_all, self.test_x_all[0],
+                                                    self.train_label_gan_all[0],self.test_label_gan_all[0],
                                                     self.test_y_all,
                                                     self.num_epochs,
                                                     self.output_dir,

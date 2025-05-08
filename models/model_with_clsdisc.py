@@ -40,33 +40,6 @@ class Generator_gru(nn.Module):
         return gen, cls
 
 
-# class Generator_lstm(nn.Module):
-#     def __init__(self, input_size, out_size):
-#         super().__init__()
-#         self.cnn = nn.Conv1d(in_channels=input_size, out_channels=input_size * 8, kernel_size=3, padding=1)
-#         self.lstm = nn.LSTM(input_size=input_size * 8, hidden_size=128,
-#                             num_layers=2, batch_first=True, dropout=0.2)
-#         self.linear = nn.Linear(128, out_size)
-#
-#         # 分类头：输入128维，输出3类别
-#         self.classifier = nn.Linear(128, 3)
-#
-#     def forward(self, x, hidden=None):
-#         # 调整维度以适应Conv1d：(batch, features, seq_len)
-#         x = x.permute(0, 2, 1)
-#         cnn_out = nn.LeakyReLU()(self.cnn(x))
-#         # 恢复序列格式 (batch, seq_len, features)
-#         cnn_out = cnn_out.permute(0, 2, 1)
-#         lstm_out, hidden = self.lstm(cnn_out, hidden)
-#         # 自适应池化得到固定长度输出
-#         pooled_out = F.adaptive_avg_pool1d(lstm_out.permute(0, 2, 1), 1).squeeze(2)
-#
-#         # 原始输出
-#         gen = self.linear(pooled_out)
-#         # 分类输出
-#         cls = self.classifier(pooled_out)
-#
-#         return gen, cls
 
 
 class Generator_lstm(nn.Module):
@@ -220,35 +193,6 @@ class Generator_transformer(nn.Module):
         mask = mask.masked_fill(mask == 1, float('-inf'))
         return mask
 
-# RNN生成器模型
-class Generator_rnn(nn.Module):
-    def __init__(self, input_size):
-        super(Generator_rnn, self).__init__()
-        self.rnn_1 = nn.RNN(input_size, 1024, batch_first=True)
-        self.rnn_2 = nn.RNN(1024, 512, batch_first=True)
-        self.rnn_3 = nn.RNN(512, 256, batch_first=True)
-        self.linear_1 = nn.Linear(256, 128)
-        self.linear_2 = nn.Linear(128, 64)
-        self.linear_3 = nn.Linear(64, 1)
-        self.dropout = nn.Dropout(0.2)
-
-    def forward(self, x):
-        use_cuda = 1
-        device = x.device
-        h0_1 = torch.zeros(1, x.size(0), 1024).to(device)
-        out_1, _ = self.rnn_1(x, h0_1)
-        out_1 = self.dropout(out_1)
-        h0_2 = torch.zeros(1, x.size(0), 512).to(device)
-        out_2, _ = self.rnn_2(out_1, h0_2)
-        out_2 = self.dropout(out_2)
-        h0_3 = torch.zeros(1, x.size(0), 256).to(device)
-        out_3, _ = self.rnn_3(out_2, h0_3)
-        out_3 = self.dropout(out_3)
-        out_4 = self.linear_1(out_3[:, -1, :])
-        out_5 = self.linear_2(out_4)
-        out = self.linear_3(out_5)
-        return out
-
 class Discriminator3(nn.Module):
     def __init__(self, input_dim, out_size, num_cls):
         """
@@ -302,3 +246,4 @@ class Discriminator3(nn.Module):
         out = self.sigmoid(self.linear3(out))  # [B, out_size]
 
         return out
+

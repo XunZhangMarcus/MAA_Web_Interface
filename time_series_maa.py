@@ -10,10 +10,9 @@ from torch.utils.data import TensorDataset, DataLoader
 from utils.multiGAN_trainer_disccls import train_multi_gan
 from typing import List, Optional
 import models
-import os
 import time
 import glob
-from utils.evaluate_visualization import evaluate_best_models
+from utils.evaluate_visualization import *
 from utils.util import compute_logdiff
 
 def log_execution_time(func):
@@ -143,12 +142,6 @@ class MAA_time_series(MAABase):
         target_column_names = data.columns[target_columns]
         print("Target columns:", target_column_names)
 
-
-        # # Select feature columns
-        # x = data.iloc[start_row:end_row, feature_columns].values
-        # feature_column_names = data.columns[feature_columns]
-        # print("Feature columns:", feature_column_names)
-
         # Process each set of feature columns
         x_list = []
         feature_column_names_list = []
@@ -208,8 +201,7 @@ class MAA_time_series(MAABase):
         self.train_labels = generate_labels(self.train_y)
         # 生成测试集的分类标签
         self.test_labels = generate_labels(self.test_y)
-        print(self.train_y[:5])
-        print(self.train_labels[:5])
+
         # ------------------------------------------------------------------
 
     def create_sequences_combine(self, x_list, y, label, window_size, start):
@@ -285,6 +277,7 @@ class MAA_time_series(MAABase):
 
         for i, (x, y_gan, label_gan) in enumerate(
                 zip(self.train_x_all, self.train_y_gan_all, self.train_label_gan_all)):
+
             shuffle_flag = ("transformer" in self.generator_names[i])  # 最后一个设置为 shuffle=True，其余为 False
             dataloader = DataLoader(
                 TensorDataset(x, y_gan, label_gan),
@@ -353,7 +346,7 @@ class MAA_time_series(MAABase):
         results, best_model_state = train_multi_gan(self.args, self.generators, self.discriminators, self.dataloaders,
                                                     self.window_sizes,
                                                     self.y_scaler, self.train_x_all, self.train_y_all, self.test_x_all,
-                                                    self.test_y_all, self.test_label_gan_all,
+                                                    self.test_y_all, self.train_label_gan_all,self.test_label_gan_all,
                                                     self.do_distill_epochs,self.cross_finetune_epochs,
                                                     self.num_epochs,
                                                     self.output_dir,
@@ -369,8 +362,9 @@ class MAA_time_series(MAABase):
         """
         保存所有 generator 和 discriminator 的模型参数，包含时间戳、模型名称或编号。
         """
+
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        ckpt_dir = os.path.join(self.ckpt_dir, timestamp)
+        ckpt_dir = os.path.join(self.output_dir, timestamp)
         gen_dir = os.path.join(ckpt_dir, "generators")
         disc_dir = os.path.join(ckpt_dir, "discriminators")
         os.makedirs(gen_dir, exist_ok=True)
@@ -395,7 +389,7 @@ class MAA_time_series(MAABase):
 
     def get_latest_ckpt_folder(self):
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        all_subdirs = [d for d in glob.glob(os.path.join(self.ckpt_dir, timestamp[0] + "*")) if os.path.isdir(d)]
+        all_subdirs = [d for d in glob.glob(os.path.join(self.output_dir, timestamp[0] + "*")) if os.path.isdir(d)]
         if not all_subdirs:
             raise FileNotFoundError("❌ No checkpoint records!!")
         latest = max(all_subdirs, key=os.path.getmtime)
@@ -411,7 +405,7 @@ class MAA_time_series(MAABase):
             raise FileNotFoundError(f"❌ Generator checkpoint not found at: {gen_path}")
 
     def pred(self):
-        if self.ckpt_path == "auto":
+        if self.ckpt_path == "latest":
             self.ckpt_path = self.get_latest_ckpt_folder()
 
         print("Start predicting with all generators..")
@@ -429,7 +423,7 @@ class MAA_time_series(MAABase):
                                        self.test_x_all, self.test_y_all, self.y_scaler,
                                        self.output_dir)
 
-        # —— 新增：遍历每个 generator，把“归一化后”->“原始价格”的真实/预测值保存到 CSV ——
+        # —— 新增：遍历每个 generator，把"归一化后"->"原始价格"的真实/预测值保存到 CSV ——
         with torch.no_grad():
             for i, gen in enumerate(self.generators):
                 gen.eval()
@@ -446,12 +440,19 @@ class MAA_time_series(MAABase):
                     'true': y_true,
                     'pred': y_pred
                 })
-                csv_save_path = "true2pred"
-                if not os.path.exists(csv_save_path):
-                    os.makedirs(csv_save_path)
-                out_path = os.path.join(csv_save_path, f'predictions_gen{i + 1}.csv')
+                csv_save_dir = self.output_dir
+                if not os.path.exists(csv_save_dir):
+                    os.makedirs(csv_save_dir)
+                out_path = os.path.join(csv_save_dir, f'predictions_gen{i + 1}.csv')
                 df.to_csv(out_path, index=False)
                 print(f"Saved true vs pred for generator {i + 1} at: {out_path}")
+
+        csv_paths = glob.glob(os.path.join(csv_save_dir, '*.csv'))
+        all_true_series, pred_series_list, pred_labels = read_and_collect_data(csv_paths)
+
+        # 绘制密度图
+        plot_density(all_true_series, pred_series_list, pred_labels, self.output_dir, alpha=0.4,
+                     no_grid=True)
 
         return results
 

@@ -5,7 +5,7 @@
 # 遍历指定的 generator 和对应的 window_size 组合
 # 输出目录结构: ./output/<dataset_basename>/<generator_name>
 
-DATA_DIR="./database/kline_processed_data"
+DATA_DIR="./database/processed"
 PYTHON_SCRIPT="run_multi_gan.py"
 
 # 定义 generator 和对应的 window_size
@@ -57,7 +57,7 @@ DEFAULT_START=31
 DEFAULT_END=-1
 
 # 遍历数据文件 <source_id data="0" title="run_all.sh" />
-for FILE in "$DATA_DIR"/processed_*_day.csv; do
+for FILE in "$DATA_DIR"/*_processed.csv; do
     FILENAME=$(basename "$FILE")
     BASENAME="${FILENAME%.csv}" # 例如: processed_原油_day
 
@@ -97,8 +97,9 @@ for FILE in "$DATA_DIR"/processed_*_day.csv; do
             --start_timestamp "$START_TIMESTAMP" \
             --end_timestamp "$END_TIMESTAMP" \
             --generator "$generator" \
-            --feature_columns 2 19\
-            --window_size "$window_size" \
+            --feature_columns 2 19 \
+            --window_sizes "$window_size" \
+            --num_epoch 1024 \
             --N_pairs 1 \
             --distill_epochs 0 \
             --cross_finetune_epochs 0 \

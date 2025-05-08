@@ -9,6 +9,7 @@ import logging  # NEW
 
 def train_baseframe(generator, dataloader,
                     y_scaler, train_x, train_y, val_x, val_y,
+                    train_labels, val_labels,
                     num_epochs,
                     output_dir,
                     device,
@@ -106,6 +107,9 @@ def train_baseframe(generator, dataloader,
             break
     results = evaluate_best_models([generator], [best_model_state], [train_x], train_y, [val_x], val_y, y_scaler,
                                 output_dir)
+
+    results=evaluate_best_models_reg_cls([generator], [best_model_state], [train_x], train_y, train_labels, [val_x], val_y,
+                                     val_labels, y_scaler, output_dir)
     return results, best_model_state
 
      

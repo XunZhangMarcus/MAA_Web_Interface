@@ -30,16 +30,11 @@ def run_experiments(args):
         # for target,feature in zip(target_columns,feature_columns):
         # 运行实验，获取结果
         target_feature_columns = args.feature_columns
-        # target_feature_columns = feature_columns
-        # target_feature_columns=target_feature_columns.extend(target)
         target_feature_columns.extend(target)
-        # target_feature_columns.append(target)
-        print("using features:", target_feature_columns)
 
         gca.process_data(args.data_path,args.start_timestamp, args.end_timestamp, target, target_feature_columns)
         gca.init_dataloader()
         gca.init_model(args.num_classes)
-
 
         logger = setup_experiment_logging(args.output_dir, vars(args))
 
@@ -80,17 +75,16 @@ if __name__ == "__main__":
 
     # 使用argparse解析命令行参数
     parser = argparse.ArgumentParser(description="Run experiments for triple GAN model")
-    parser.add_argument('--notes', type=str, required=False, help="Leave your setting in this note",
-                        default="回测300股指自回归")
+    parser.add_argument('--notes', type=str, required=False, help="Leave your setting in this note")
     parser.add_argument('--data_path', type=str, required=False, help="Path to the input data file",
-                        default="database/processed_300股指_day.csv")
+                        default="database/zx_processed_黄金_day.csv")
     parser.add_argument('--output_dir', type=str, required=False, help="Directory to save the output",
-                        default=r"D:\Desktop\SHU\Intern\同梁AI量化\papers\all_logs\main/out_put/multi")
+                        default="database/zx_processed_黄金_day.csv")
     parser.add_argument('--ckpt_dir', type=str, required=False, help="Directory to save the checkpoints",
-                        default="ckpt")
+                        default="database/zx_processed_黄金_day.csv")
+
+
     parser.add_argument('--feature_columns', type=list, help="Window size for first dimension", default=list(range(2,19)))
-    # parser.add_argument('--feature_columns', type=list, help="Window size for first dimension", default=[])
-    # parser.add_argument('--feature_columns', type=list, help="Window size for first dimension", default=list(range(2,24)))
     parser.add_argument('--target_columns', type=list, help="Window size for first dimension", default=[list(range(1, 2))])
     parser.add_argument('--start_timestamp', type=int, help="start row", default=31)
     parser.add_argument('--end_timestamp', type=int, help="end row", default=-1)
@@ -121,7 +115,7 @@ if __name__ == "__main__":
     parser.add_argument('--mode', type=str, choices=["pred", "train"],
                         help="If train, it will also pred, while it predicts, it will laod the model checkpoint saved before.",
                         default="train")
-    parser.add_argument("--ckpt_path", type=str, help="Checkpoint path", default="lastest")
+    parser.add_argument("--ckpt_path", type=str, help="Checkpoint path", default="latest")
 
     args = parser.parse_args()
 

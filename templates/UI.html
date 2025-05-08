@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>模型训练与预测平台</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f6fa;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 20px;
+      margin: -20px -20px 20px -20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-left {
+      flex: 1;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0;
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .color-word {
+      display: flex;
+      gap: 2px;
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .char-q { color: #FFD700; }
+    .char-m { color: #4169E1; }
+    .char-c { color: #FF4500; }
+    .char-a { color: #FFD700; }
+    .char-d { color: #FF4500; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .parameter-section {
+      background: white;
+      margin: 20px 0;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .parameter-section h2 {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 0 20px 0;
+      color: #2c3e50;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-size: 16px;
+      color: #34495e;
+    }
+
+    input[type="text"], 
+    input[type="number"],
+    select {
+      width: 100%;
+      max-width: 500px;
+      padding: 10px 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin: 5px 0;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus, 
+    input[type="number"]:focus,
+    select:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 0;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-1px);
+    }
+
+    .start-button {
+      background-color: #2ecc71;
+      font-size: 18px;
+      padding: 12px 24px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .start-button:hover {
+      background-color: #27ae60;
+    }
+
+    #logOutput {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #ddd;
+      padding: 15px;
+      white-space: pre-wrap;
+      background-color: #f8f9fa;
+      font-size: 14px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      border-radius: 6px;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      border: 1px solid #eee;
+      padding: 20px;
+      border-radius: 6px;
+      background-color: #f8f9fa;
+      margin: 10px 0;
+    }
+
+    .checkbox-grid label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 0;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .checkbox-grid label:hover {
+      background-color: #e9ecef;
+    }
+
+    .checkbox-grid input[type="checkbox"] {
+      margin-right: 10px;
+      width: auto;
+    }
+
+    .checkbox-actions {
+      margin: 15px 0;
+      display: flex;
+      gap: 10px;
+    }
+
+    .selection-count {
+      margin-left: 10px;
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .gan-group {
+      margin-bottom: 25px;
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    
+    .gan-group h3 {
+      margin: 0 0 15px 0;
+      color: #2c3e50;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+
+      .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+      }
+
+      .header-right {
+        margin-top: 10px;
+      }
+
+      .color-word {
+        font-size: 24px;
+      }
+
+      .checkbox-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <h1>模型训练与预测平台</h1>
+    </div>
+    <div class="header-right">
+      <div class="logo">
+        <div class="logo-text">MAA</div>
+        <div class="color-word">
+          <span class="char-q">Q</span>
+          <span class="char-m">m</span>
+          <span class="char-c">c</span>
+          <span class="char-a">a</span>
+          <span class="char-d">d</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- 基本参数设置 -->
+    <div class="parameter-section">
+      <h2>基本参数设置</h2>
+      
+      <label for="data_path">数据文件路径:</label>
+      <input type="text" id="data_path" value="{{ data_path }}" placeholder="例如: database/zx_processed_黄金_day.csv">
+      <button onclick="loadColumns()">加载列名</button>
+      
+      <label for="output_dir">输出目录:</label>
+      <input type="text" id="output_dir" value="{{ output_dir }}" placeholder="例如: out_put/multi">
+      
+      <label for="ckpt_dir">检查点目录:</label>
+      <input type="text" id="ckpt_dir" value="{{ ckpt_dir }}" placeholder="例如: out_put/ckpt">
+    </div>
+
+    <!-- 训练参数设置 -->
+    <div class="parameter-section">
+      <h2>训练参数设置</h2>
+      
+      <label for="batch_size">批次大小:</label>
+      <input type="number" id="batch_size" value="{{ batch_size }}" min="1">
+      
+      <label for="num_epochs">训练轮数:</label>
+      <input type="number" id="num_epochs" value="{{ num_epochs }}" min="1">
+      
+      <label for="lr">学习率:</label>
+      <input type="number" id="lr" value="{{ lr }}" step="0.000001">
+      
+      <label for="train_split">训练集比例:</label>
+      <input type="number" id="train_split" value="{{ train_split }}" min="0" max="1" step="0.1">
+      
+      <label for="window_sizes">窗口大小 (用逗号分隔):</label>
+      <input type="text" id="window_sizes" value="{{ window_sizes|join(',') }}" placeholder="例如: 5,10,15">
+    </div>
+
+    <!-- 特征和目标列选择 -->
+    <div class="parameter-section" id="columnSelectionSection" style="display: none;">
+      <h2>特征和目标列选择</h2>
+      <div id="loadingMessage">正在加载列名，请稍候...</div>
+      <div id="columnSelectionContent" style="display: none;">
+        <div id="ganGroups">
+          <div class="gan-group">
+            <h3>GAN 1 特征选择</h3>
+            <div class="checkbox-grid" id="feature1Select"></div>
+            <div class="checkbox-actions">
+              <button onclick="selectAll('feature1')">全选</button>
+              <button onclick="clearAll('feature1')">清除</button>
+            </div>
+          </div>
+          
+          <div class="gan-group">
+            <h3>GAN 2 特征选择</h3>
+            <div class="checkbox-grid" id="feature2Select"></div>
+            <div class="checkbox-actions">
+              <button onclick="selectAll('feature2')">全选</button>
+              <button onclick="clearAll('feature2')">清除</button>
+            </div>
+          </div>
+          
+          <div class="gan-group">
+            <h3>GAN 3 特征选择</h3>
+            <div class="checkbox-grid" id="feature3Select"></div>
+            <div class="checkbox-actions">
+              <button onclick="selectAll('feature3')">全选</button>
+              <button onclick="clearAll('feature3')">清除</button>
+            </div>
+          </div>
+        </div>
+
+        <label>选择目标列:</label>
+        <div class="checkbox-grid" id="targetSelect"></div>
+        <div class="checkbox-actions">
+          <button onclick="selectAll('target')">全选</button>
+          <button onclick="clearAll('target')">清除</button>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="startTraining()" class="start-button" id="startTrainingButton" style="display: none;">开始训练模型</button>
+
+    <!-- 预测部分 -->
+    <div class="parameter-section">
+      <h2>预测设置</h2>
+      <label for="predict_input">预测输入数据路径:</label>
+      <input type="text" id="predict_input" placeholder="例如: database/test_data.csv">
+
+      <label for="predict_output">预测结果输出路径:</label>
+      <input type="text" id="predict_output" placeholder="例如: out_put/predictions.csv">
+
+      <label for="predict_ckpt">模型检查点路径:</label>
+      <input type="text" id="predict_ckpt" value="out_put/ckpt" placeholder="例如: out_put/ckpt">
+
+      <button onclick="startPrediction()" class="start-button">开始预测</button>
+    </div>
+
+    <!-- 预测结果展示 -->
+    <div class="parameter-section" id="predictionResults" style="display: none;">
+      <h2>预测结果</h2>
+      <div id="predictionResultsContent"></div>
+    </div>
+
+    <!-- 日志输出 -->
+    <div class="parameter-section">
+      <h2>运行日志输出</h2>
+      <pre id="logOutput">等待日志输出...</pre>
+    </div>
+  </div>
+
+  <script>
+    function loadColumns() {
+      const path = document.getElementById('data_path').value;
+      if (!path) {
+        alert('请输入数据文件路径');
+        return;
+      }
+
+      // 显示列选择区域和加载消息
+      const columnSelectionSection = document.getElementById('columnSelectionSection');
+      const loadingMessage = document.getElementById('loadingMessage');
+      const columnSelectionContent = document.getElementById('columnSelectionContent');
+      
+      // 确保所有必要的元素都存在
+      if (!columnSelectionSection || !loadingMessage || !columnSelectionContent) {
+        console.error('找不到必要的DOM元素');
+        return;
+      }
+
+      columnSelectionSection.style.display = 'block';
+      loadingMessage.style.display = 'block';
+      columnSelectionContent.style.display = 'none';
+      
+      const startTrainingButton = document.getElementById('startTrainingButton');
+      if (startTrainingButton) {
+        startTrainingButton.style.display = 'none';
+      }
+
+      fetch('/columns?path=' + encodeURIComponent(path))
+        .then(response => response.json())
+        .then(data => {
+          if (data.columns && data.columns.length > 0) {
+            // 清空所有选择区域
+            const selectors = ['feature1Select', 'feature2Select', 'feature3Select', 'targetSelect'];
+            selectors.forEach(id => {
+              const element = document.getElementById(id);
+              if (element) {
+                element.innerHTML = '';
+              }
+            });
+
+            data.columns.forEach(col => {
+              // 为每个GAN组创建特征列复选框
+              for (let i = 1; i <= 3; i++) {
+                const selectElement = document.getElementById('feature' + i + 'Select');
+                if (selectElement) {
+                  const item = createCheckboxItem(col);
+                  const checkbox = item.querySelector('input');
+                  if (checkbox) {
+                    checkbox.addEventListener('change', () => {
+                      updateSelectedCount('feature' + i);
+                    });
+                  }
+                  selectElement.appendChild(item);
+                }
+              }
+
+              // 创建目标列复选框
+              const targetSelect = document.getElementById('targetSelect');
+              if (targetSelect) {
+                const targetItem = createCheckboxItem(col);
+                const checkbox = targetItem.querySelector('input');
+                if (checkbox) {
+                  checkbox.addEventListener('change', () => {
+                    updateSelectedCount('target');
+                  });
+                }
+                targetSelect.appendChild(targetItem);
+              }
+            });
+
+            // 更新所有选择计数
+            ['feature1', 'feature2', 'feature3', 'target'].forEach(type => {
+              updateSelectedCount(type);
+            });
+
+            // 显示列选择内容和开始训练按钮
+            loadingMessage.style.display = 'none';
+            columnSelectionContent.style.display = 'block';
+            if (startTrainingButton) {
+              startTrainingButton.style.display = 'block';
+            }
+          } else if (data.error) {
+            loadingMessage.innerHTML = `<p style="color: red;">加载列名失败: ${data.error}</p>`;
+          } else {
+            loadingMessage.innerHTML = '<p style="color: red;">列名加载失败: 数据格式错误</p>';
+          }
+        })
+        .catch(error => {
+          loadingMessage.innerHTML = `<p style="color: red;">请求列名失败: ${error.message}</p>`;
+        });
+    }
+
+    // 创建带复选框的列项
+    function createCheckboxItem(col) {
+      const container = document.createElement('label');
+      container.className = 'checkbox-item';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = col.name;
+      checkbox.value = `列[${col.index}]: ${col.name}`;
+      container.appendChild(checkbox);
+      container.appendChild(document.createTextNode(`列[${col.index}]: ${col.name}`));
+      return container;
+    }
+
+    // 获取所有选中的值
+    function getSelectedValues(containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) {
+        console.error(`找不到容器元素: ${containerId}`);
+        return [];
+      }
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    // 全选
+    function selectAll(type) {
+      console.log('Selecting all for:', type);  // 添加调试日志
+      const container = document.getElementById(type + "Select");
+      if (!container) {
+        console.error(`找不到容器元素: ${type}Select`);
+        return;
+      }
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      console.log('Found checkboxes:', checkboxes.length);  // 添加调试日志
+      checkboxes.forEach(cb => {
+        cb.checked = true;
+        // 触发change事件以更新计数
+        cb.dispatchEvent(new Event('change'));
+      });
+    }
+
+    // 清除
+    function clearAll(type) {
+      console.log('Clearing all for:', type);  // 添加调试日志
+      const container = document.getElementById(type + "Select");
+      if (!container) {
+        console.error(`找不到容器元素: ${type}Select`);
+        return;
+      }
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      console.log('Found checkboxes:', checkboxes.length);  // 添加调试日志
+      checkboxes.forEach(cb => {
+        cb.checked = false;
+        // 触发change事件以更新计数
+        cb.dispatchEvent(new Event('change'));
+      });
+    }
+
+    // 显示已选数量
+    function updateSelectedCount(type) {
+      console.log('Updating count for:', type);  // 添加调试日志
+      const container = document.getElementById(type + "Select");
+      if (!container) {
+        console.error(`找不到容器元素: ${type}Select`);
+        return;
+      }
+      const count = container.querySelectorAll('input[type="checkbox"]:checked').length;
+      console.log('Selected count:', count);  // 添加调试日志
+      const actionDiv = container.nextElementSibling;
+      if (actionDiv && actionDiv.classList.contains('checkbox-actions')) {
+        const status = document.createElement('span');
+        status.className = 'selection-count';
+        status.textContent = `已选: ${count}`;
+        // 移除旧的状态提示
+        const old = actionDiv.querySelector('.selection-count');
+        if (old) old.remove();
+        actionDiv.appendChild(status);
+      }
+    }
+
+    async function startTraining() {
+      const dataPath = document.getElementById('data_path').value;
+      const ckptDir = document.getElementById('ckpt_dir').value;
+      
+      // 获取三个GAN组的特征列
+      const featureColumns1 = getSelectedValues('feature1Select');
+      const featureColumns2 = getSelectedValues('feature2Select');
+      const featureColumns3 = getSelectedValues('feature3Select');
+      const targetColumns = getSelectedValues('targetSelect');
+      
+      const batchSize = document.getElementById('batch_size').value;
+      const numEpochs = document.getElementById('num_epochs').value;
+      const lr = document.getElementById('lr').value;
+      const trainSplit = document.getElementById('train_split').value;
+      const windowSizes = document.getElementById('window_sizes').value;
+
+      // 检查必要参数
+      if (!dataPath || !ckptDir || 
+          featureColumns1.length === 0 || 
+          featureColumns2.length === 0 || 
+          featureColumns3.length === 0 || 
+          targetColumns.length === 0) {
+        alert('请填写所有必要参数并为每个GAN选择特征列！');
+        return;
+      }
+
+      // 禁用开始按钮
+      const startButton = document.querySelector('.start-button');
+      startButton.disabled = true;
+      startButton.textContent = '训练中...';
+
+      try {
+        // 先清空日志输出
+        const logOutput = document.getElementById('logOutput');
+        logOutput.textContent = '正在启动训练...\n';
+        
+        // 开始监听日志流
+        startLogStream();
+
+        // 打印选择的特征列信息
+        console.log('GAN 1 特征列:', featureColumns1);
+        console.log('GAN 2 特征列:', featureColumns2);
+        console.log('GAN 3 特征列:', featureColumns3);
+        console.log('目标列:', targetColumns);
+
+        const response = await fetch('/train', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            train_csv: dataPath,
+            save_path: ckptDir + '/model.pt',
+            feature_columns: [
+              featureColumns1,
+              featureColumns2,
+              featureColumns3
+            ],
+            target_column: targetColumns,
+            batch_size: parseInt(batchSize),
+            num_epochs: parseInt(numEpochs),
+            lr: parseFloat(lr),
+            train_split: parseFloat(trainSplit),
+            window_sizes: windowSizes.split(',').map(x => parseInt(x.trim()))
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '训练请求失败');
+        }
+
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // 保存特征组和目标列配置
+        saveTrainingConfig([
+          featureColumns1,
+          featureColumns2,
+          featureColumns3
+        ], targetColumns);
+
+      } catch (error) {
+        console.error('训练错误:', error);
+        alert('训练启动失败: ' + error.message);
+        // 在日志中显示错误
+        const logOutput = document.getElementById('logOutput');
+        logOutput.textContent += `错误: ${error.message}\n`;
+      } finally {
+        // 恢复按钮状态
+        startButton.disabled = false;
+        startButton.textContent = '开始训练模型';
+      }
+    }
+
+    async function startPrediction() {
+      const inputPath = document.getElementById('predict_input').value;
+      const outputPath = document.getElementById('predict_output').value;
+      const ckptPath = document.getElementById('predict_ckpt').value;
+
+      // 检查必要参数
+      if (!inputPath || !outputPath || !ckptPath) {
+        alert('请填写所有必要参数！');
+        return;
+      }
+
+      // 禁用开始按钮
+      const startButton = document.querySelector('.start-button');
+      startButton.disabled = true;
+      startButton.textContent = '预测中...';
+
+      try {
+        // 清空日志输出
+        const logOutput = document.getElementById('logOutput');
+        logOutput.textContent = '正在启动预测...\n';
+        
+        // 开始监听日志流
+        startLogStream();
+
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            input_path: inputPath,
+            output_path: outputPath,
+            ckpt_path: ckptPath,
+            feature_groups: window.featureGroups || [], // 使用之前训练时保存的特征组
+            target_columns: window.targetColumns || []  // 使用之前训练时保存的目标列
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '预测请求失败');
+        }
+
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // 显示预测结果区域
+        const predictionResults = document.getElementById('predictionResults');
+        predictionResults.style.display = 'block';
+
+      } catch (error) {
+        console.error('预测错误:', error);
+        alert('预测启动失败: ' + error.message);
+        // 在日志中显示错误
+        const logOutput = document.getElementById('logOutput');
+        logOutput.textContent += `错误: ${error.message}\n`;
+      } finally {
+        // 恢复按钮状态
+        startButton.disabled = false;
+        startButton.textContent = '开始预测';
+      }
+    }
+
+    // 保存训练时的特征组和目标列，供预测时使用
+    function saveTrainingConfig(featureGroups, targetColumns) {
+      window.featureGroups = featureGroups;
+      window.targetColumns = targetColumns;
+    }
+
+    function startLogStream() {
+      const logOutput = document.getElementById('logOutput');
+      const eventSource = new EventSource('/stream');
+      
+      eventSource.onmessage = function(event) {
+        try {
+          const data = JSON.parse(event.data).message;
+          // 只显示非空消息
+          if (data && data.trim() !== '') {
+            logOutput.textContent += data + "\n";
+            // 自动滚动到底部
+            logOutput.scrollTop = logOutput.scrollHeight;
+          }
+        } catch (e) {
+          console.error('日志解析失败:', e);
+          logOutput.textContent += "[日志解析失败]\n";
+        }
+      };
+      
+      eventSource.onerror = function(err) {
+        console.error('日志流错误:', err);
+        logOutput.textContent += "[日志连接中断]\n";
+        eventSource.close();
+      };
+    }
+  </script>
+</body>
+</html>
