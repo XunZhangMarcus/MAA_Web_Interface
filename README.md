@@ -1,85 +1,81 @@
-# GCA_lite
-A lite version of GCA base and everything almost encapsulated into classes
+# MAA (Multi-GAN Adversarial Analysis) – README
 
-## A biref intro of GCA:
+## 项目概述
 
-A class inherit structure:
+MAA (Multi-GAN Adversarial Analysis) 是一个基于多生成对抗网络（Multi-GAN）的金融量化因子时序预测模型。该项目致力于通过对抗训练提升金融因子预测的准确性，并实现模型的训练和推理过程的可视化展示。用户可以通过Web UI界面与模型交互，进行因子时序预测，并查看相关的训练和预测结果。
 
+## 功能描述
+
+### 主要功能
+
+1. **训练过程可视化**: 实现模型训练过程的图形化展示，帮助用户理解模型的训练动态。
+2. **推理预测过程可视化**: 通过图表和可视化工具展示模型预测的效果和细节。
+3. **Web UI界面**: 提供一个简洁的Web界面，供用户与模型进行交互，支持预测和模型的可视化操作。
+4. **网页调用模型进行预测**: 支持通过网页直接调用模型进行预测，便于实时应用和验证模型效果。
+
+### 架构
+
+* **后端**: Python Flask框架，用于模型训练和推理服务。
+* **前端**: 使用HTML/CSS/JavaScript构建Web UI界面。
+* **模型**: 基于Multi-GAN（多生成对抗网络）的时序预测模型，专注于金融量化因子的预测。
+* **数据**: 使用金融量化因子的时序数据进行训练与推理。
+
+## 运行说明
+
+### 1. 准备数据集
+
+确保你有符合模型要求的金融量化因子时序数据集。你可以使用默认的测试数据集，或者准备符合要求的CSV数据集。数据集需要放置在目标文件夹中，以便加载。
+
+### 2. 运行项目
+
+#### 方式一：通过批处理文件启动
+
+* 找到`start_MAA_UI.bat`文件，双击运行即可启动应用程序。这将直接打开一个浏览器窗口，并自动加载Web界面。
+
+#### 方式二：通过Python启动
+
+* 进入项目目录并使用Python运行`app.py`文件：
+
+  ```bash
+  python app.py
+  ```
+
+* 然后通过浏览器访问本地端口：[http://127.0.0.1:8000](http://127.0.0.1:8000) 进入Web界面。
+
+### 3. 使用Web UI
+
+#### 进入Web界面后，按以下步骤操作：
+
+1. **提取列索引**:
+
+   * 点击页面上的“提取列索引”按钮。选择相应的GAN输入因子（GAN1, GAN2, GAN3），这些因子将用于模型的训练和预测。
+
+2. **开始训练**:
+
+   * 在选择好因子后，点击“开始训练”按钮。训练过程将会启动，并在页面上显示训练的进度和相关细节。训练完成后，模型的权重和测试结果将保存在指定的文件目录中。
+
+3. **查看预测结果**:
+
+   * 训练完成后，你可以在Web界面查看模型的预测结果、训练误差和其它相关信息。
+
+## 依赖项
+
+在运行本项目之前，请确保已安装以下Python库：
+
+* Flask
+* Pandas
+* NumPy
+* TensorFlow 或 PyTorch（取决于所使用的模型框架）
+* Matplotlib (用于可视化)
+
+可以通过以下命令安装依赖：
+
+```bash
+pip install -r requirements.txt
 ```
-GCAbase
- | 
- | -- GCA time series
- | -- GCA image generation 
- | -- ... 
-```
 
-## Overall paradigm
+## 贡献
 
-### Initialize models: 
-- N generators, e.g. [GRU LSTM, Transformer]  # 3 generator models
-- N discriminators, e.g. [CNND1, CNND2, CNND3]  # 3 discriminator models
+如有任何问题或建议，欢迎提出反馈或贡献代码。你可以通过GitHub提交问题报告或Pull Request。
 
-- Generators use past window size to predict next 1 (to N maybe will realize in the future version) timestamp.
-- Discriminators use past window size concatting predict label to discriminate and adversarial train
-
-### Main loop: 
-Now following are the present code logic. (Please point out if there exists any faults)
-``` 
-FOR e in EPOCHS: 
-  # Main training loop
-  # 1. Individual pre-training
-  for generator in generators:
-      train(generator, loss_fn=MSE, Cross Entropy)  # Train each generator separately with MSE loss
-      
-  for discriminator in discriminators:
-      train(discriminator, loss_fn=ClassificationLoss)  # Train each discriminator with classification loss (0: no change, 1: up, -1: down)
-
-  while e % k ==0: 
-    # 2. Intra-group evaluation and selection
-    best_generator = evaluate_and_select_best(generators, validation_data)
-    best_discriminator = evaluate_and_select_best(discriminators, validation_data)
-      
-    # 3. Intra-group knowledge distillation
-    distill(best_generator, worst_generator)
-     
-    # 4. Cross-group competition
-    FOR e0 in k0: 
-      adversarial_train(best_generator, best_discriminator)
-      if not converge: 
-        break
-```
-
-
-
-
-# Today's Tasks(please omit)
-
-## Interface Design & Optimization
-- [ ] Discuss performance issues (point 1) with CC and propose solutions
-- [ ] Add train/predict mode switching functionality (point 6)
-- [x] Implement model weight saving capability (related to point 6)
-- [x] Design model library display to show only model names (point 3)
-
-## Model Training Improvements
-- [x] Evaluate hyperparameters currently available (window size, batch size, learning rate, etc.)
-- [ ] Consider adding automatic parameter suggestion (optimal epochs)
-- [ ] Review loss functions and algorithm implementations for performance improvement
-
-## Documentation & Specifications
-- [x] Document supported data types (time-series with any sequential period)
-- [ ] Clarify prediction cycle behavior in documentation (single vs multiple periods)
-- [x] Update documentation for model import process (Python files in model directory)
-
-## Model Library Management
-- [x] Implement model search functionality for user-added models (point 4)
-  - [x] Continue expanding built-in model library (point 5) 
-  - so far as we set an easy init
-
-
-## Evaluation Metrics
-- [?] NEED CC
-- [x] Verify all evaluation charts are being generated properly:
-  - [x] Price fitting curves (train/test sets)
-  - [x] MSE loss curves
-  - [x] Cross-adversarial loss curves (N^2)
-  - [x] Discriminator loss curves
+感谢使用MAA模型，祝你在金融量化分析领域取得优异成果！
