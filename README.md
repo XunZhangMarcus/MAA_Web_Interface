@@ -65,7 +65,7 @@ MAA (Multi-GAN Adversarial Analysis) 是一个基于多生成对抗网络（Mult
 * Flask
 * Pandas
 * NumPy
-* TensorFlow 或 PyTorch（取决于所使用的模型框架）
+* PyTorch
 * Matplotlib (用于可视化)
 
 可以通过以下命令安装依赖：
