@@ -74,8 +74,3 @@ MAA (Multi-GAN Adversarial Analysis) 是一个基于多生成对抗网络（Mult
 pip install -r requirements.txt
 ```
 
-## 贡献
-
-如有任何问题或建议，欢迎提出反馈或贡献代码。你可以通过GitHub提交问题报告或Pull Request。
-
-感谢使用MAA模型，祝你在金融量化分析领域取得优异成果！
